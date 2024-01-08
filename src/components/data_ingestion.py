@@ -17,20 +17,14 @@ class DataIngestionConfig:
     Returns:
         obj: dataclass object
     """
-    raw_data_dir: str = os.path.join(os.getcwd(), 'artifacts', 'data', 'raw')
-    transformed_data_dir: str = os.path.join(os.getcwd(), 'artifacts', 'data', 'transformed')
-    train_data_filepath: str = os.path.join(os.getcwd(), 'artifacts', 'data', 'transformed', 'train')
-    # file_name: str
-    # file_type: str
-    # file_delimiter: str
-    # file_header: bool
-    # file_encoding: str
+    raw_data_dir: str = os.path.join('artifacts', 'data', 'raw')
+    transformed_data_dir: str = os.path.join('artifacts', 'data', 'transformed')
+    train_data_filepath: str = os.path.join('artifacts', 'data', 'transformed', 'train')
 
 
 class DataIngestion:
     def __init__(self) -> None:
         self.ingestion_config = DataIngestionConfig()
-
 
     def download_data(data_url: str, data_dir: str) -> None:
         """Download the data"""
@@ -60,11 +54,15 @@ class DataIngestion:
 
 
     def extract_rarfile(self, rar_filepath: str) -> None:
-        """Extract the rar file"""
+        """Extract the rar file
+        
+        Args:
+            rar_filepath (str): path to the rar file
+        """
         try:
             # Extract the rar file to the raw data directory
             with RarFile(rar_filepath, 'r') as rar_ref:
-                rar_ref.extract(self.ingestion_config.raw_data_dir)
+                rar_ref.extractall(self.ingestion_config.raw_data_dir)
             
         except Exception as e:
             error_message = CustomException(e, sys)
@@ -73,27 +71,9 @@ class DataIngestion:
 
 if __name__ == "__main__":
 
-    #DataIngestion.download_data('https://data.nasa.gov/download/brfb-gzcv/application%2Fzip', os.path.join(os.getcwd(), 'artifacts', 'data', 'raw', 'IMS.zip'))
 
-    ingest_pip = DataIngestion()
-    
-    ingest_pip.download_data('https://data.nasa.gov/download/brfb-gzcv/application%2Fzip', os.path.join(os.getcwd(), 'artifacts', 'data', 'raw', 'IMS.zip'))
-    ingest_pip.extract_zipfile(zip_filepath='artifacts/data/raw/IMS.zip')
-    ingest_pip.extract_rarfile(rar_filepath='artifacts/data/raw/IMS/1st_test.rar')
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    logger.info('This is an info message')
-    logger.warning('This is a warning message')
-    logger.error('This is an error message')
-    logger.critical('This is a critical message')
+    ingest_pip = DataIngestion()    
+    #ingest_pip.download_data('https://data.nasa.gov/download/brfb-gzcv/application%2Fzip', os.path.join(os.getcwd(), 'artifacts', 'data', 'raw', 'IMS.zip'))
+    #ingest_pip.extract_zipfile(zip_filepath='artifacts/data/raw/IMS.zip')
+    #ingest_pip.extract_rarfile(rar_filepath='artifacts/data/raw/IMS/1st_test.rar')
+    ingest_pip.extract_rarfile(rar_filepath='artifacts/data/raw/IMS/2nd_test.rar')
