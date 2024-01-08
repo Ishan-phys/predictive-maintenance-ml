@@ -1,5 +1,5 @@
 import sys
-from logger import logger
+from src.logger import logger
 
 def error_message_details(error, error_detail:sys):
     """Error message details
@@ -37,11 +37,3 @@ class CustomException(Exception):
             str: error message
         """
         return self.error_message
-    
-
-if __name__ == '__main__':
-    try:
-        div = 1 / 0
-    except Exception as e:
-        error_message = CustomException(e, sys)
-        logger.error(error_message)

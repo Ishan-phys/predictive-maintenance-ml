@@ -10,9 +10,3 @@ with open(os.path.join(os.getcwd(), 'src', 'configs', 'logging.yaml'), 'r') as f
 
 # Create the logger
 logger = logging.getLogger(__name__)
-
-if __name__ == '__main__':
-    logger.info('This is an info message')
-    logger.warning('This is a warning message')
-    logger.error('This is an error message')
-    logger.critical('This is a critical message')
