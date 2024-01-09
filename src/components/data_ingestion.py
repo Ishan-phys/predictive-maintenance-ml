@@ -27,23 +27,32 @@ class DataIngestion:
         self.ingestion_config = DataIngestionConfig()
 
     def download_data(data_url: str, data_dir: str) -> None:
-        """Download the data"""
+        """Download the data
+        
+        Args:
+            data_url (str): URL to the data
+            data_dir (str): path to the data directory
+        """
         try:
             # Download the data from the URL and extract it to the raw data directory
             urllib.request.urlretrieve(data_url, data_dir)
+            logger.info(f'Data download completed successfully from the URL {data_url}')
 
         except Exception as e:
             error_message = CustomException(e, sys)
             logger.error(error_message)
 
     def extract_zipfile(self, zip_filepath: str) -> None:
-        """Extract the zip file"""
+        """Extract the zip file
+        
+        Args:
+            zip_filepath (str): path to the zip file
+        """
         try:
             # Extract the zipped file to the raw data directory
             with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
                 zip_ref.extractall(self.ingestion_config.raw_data_dir)
-            
-            logger.info('Data extraction completed successfully')
+            logger.info('Data extraction from zip file completed successfully')
 
             # Delete the zip file from the raw data directory
             os.remove(zip_filepath)
@@ -51,7 +60,6 @@ class DataIngestion:
         except Exception as e:
             error_message = CustomException(e, sys)
             logger.error(error_message)
-
 
     def extract_rarfile(self, rar_filepath: str) -> None:
         """Extract the rar file
@@ -63,17 +71,8 @@ class DataIngestion:
             # Extract the rar file to the raw data directory
             with RarFile(rar_filepath, 'r') as rar_ref:
                 rar_ref.extractall(self.ingestion_config.raw_data_dir)
+            logger.info('Data extraction from rarfile completed successfully')
             
         except Exception as e:
             error_message = CustomException(e, sys)
             logger.error(error_message)
-
-
-if __name__ == "__main__":
-
-
-    ingest_pip = DataIngestion()    
-    #ingest_pip.download_data('https://data.nasa.gov/download/brfb-gzcv/application%2Fzip', os.path.join(os.getcwd(), 'artifacts', 'data', 'raw', 'IMS.zip'))
-    #ingest_pip.extract_zipfile(zip_filepath='artifacts/data/raw/IMS.zip')
-    #ingest_pip.extract_rarfile(rar_filepath='artifacts/data/raw/IMS/1st_test.rar')
-    ingest_pip.extract_rarfile(rar_filepath='artifacts/data/raw/IMS/2nd_test.rar')
