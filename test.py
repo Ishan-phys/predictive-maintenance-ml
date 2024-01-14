@@ -1,24 +1,18 @@
+from src.components.data_transformation import DataTransformation
 
 
-def test_conversion_to_timestamp():
-
-    data_filepath = "artifacts/data/raw/2nd_test/2004.02.12.10.32.39"
-
-    from datetime import datetime
-
-    date_string = "2004.02.12.10.32.39"
-    # Define the format of the input string
-    format_string = "%Y.%m.%d.%H.%M.%S"
-
-    # Convert the string to a datetime object
-    dt_object = datetime.strptime(date_string, format_string)
-
-    # Convert the datetime object to a string in a desired format
-    formatted_date_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
-
-    print(formatted_date_string)
 
 
 if __name__ == "__main__":
-    test_conversion_to_timestamp()
+
+    dt = DataTransformation()
+
+    # Extract the data from the individual files
+    data = dt.extract_data_file(data_filepath='artifacts/data/raw/2nd_test/2004.02.12.11.02.39', bearing_num=0)
+
+    features_list = dt.featurize_all(data_dir="artifacts/data/raw/2nd_test", sampling_rate=20480, bearing_num=0, num_files=100)
+
+    df = dt.transform_to_df(features_list, save=False)
+
+    print(df)
 

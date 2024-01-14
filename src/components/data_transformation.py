@@ -38,7 +38,7 @@ class DataTransformation:
         """
         try:
             # Extract the data from the individual files
-            data = np.loadtxt(data_filepath, delimiter=self.ingestion_config.file_delimiter, dtype=float)[bearing_num-1, :]
+            data = np.loadtxt(data_filepath, delimiter=self.ingestion_config.file_delimiter, dtype=float)[:,bearing_num-1]
             logger.info(f'Data extraction from file {data_filepath} completed successfully. Data Shape: {data.shape}')
             
         except Exception as e:
@@ -80,7 +80,7 @@ class DataTransformation:
 
         return features
 
-    def featurize_all(self, raw_files_dir, sampling_rate, bearing_num, num_files):
+    def featurize_all(self, data_dir, sampling_rate, bearing_num):
         """Calculate the features from the data
 
         Args:
@@ -93,26 +93,35 @@ class DataTransformation:
         """
         try:    
             features_list = []
+
             # Loop over all the data files and obtain the features for each
-            for file_path in os.listdir(raw_files_dir)[:int(num_files)]:
+            for file_name in sorted(os.listdir(data_dir)):
+
+                # Initialize the features dictionary
+                features = dict()
+
+                # Obtain the path to the data file
+                file_path = os.path.join(data_dir, file_name)
+                logger.info(f'Processing file: {file_path}')
+
+                # Obtain the timestamp of the data file
+                timestamp = convert_to_timestamp(date_string=file_path.split('/')[-1])
+                features.update({'timestamp':timestamp})
 
                 # Extract the data from the individual files
                 data = self.extract_data_file(file_path, bearing_num)
 
                 # Calculate the features from the data
-                features = self.featurize(data, sampling_rate)
+                calc_features = self.featurize(data, sampling_rate)
+                features.update(calc_features)
 
-                # Obtain the timestamp of the data file
-                timestamp = convert_to_timestamp(date_string=file_path.split('/')[-1])
-
-                # Include the timestamp 
-                features.update({'timestamp':timestamp})
+                logger.info(f'Feature calculation completed successfully. Num features: {features}')
 
                 # Append the calculate features to a list
                 features_list.append(features)
 
                 # Append the timestamp to the features
-                logger.info(f'Feature calculation completed successfully. Features Shape: {features.shape}')
+                logger.info('Feature calculation completed successfully.')
 
         except Exception as e:
             error_message = CustomException(e, sys)
@@ -145,7 +154,7 @@ class DataTransformation:
 
         return df
 
-    def split_data(self, df, train_size=400):
+    def split_data(self, df, train_size=400, save=False):
         """Split the data into train and test sets
 
         Args:
@@ -163,16 +172,15 @@ class DataTransformation:
 
             logger.info(f'Data split completed successfully. Train Data Shape: {train_df.shape},\nValidatation Data Shape: {val_df.shape},\nTest Data Shape: {test_df.shape}')
 
-            # Save the train, validation and test sets to csv files
-            train_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'train_data.csv'), index=False)
-            val_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'val_data.csv'), index=False)
-            test_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'test_data.csv'), index=False)
-            logger.info(f'Train, validation and test sets saved successfully at {self.ingestion_config.transformed_data_dir}')
+            if save:
+                # Save the train, validation and test sets to csv files
+                train_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'train_data.csv'), index=False)
+                val_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'val_data.csv'), index=False)
+                test_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'test_data.csv'), index=False)
+                logger.info(f'Train, validation and test sets saved successfully at {self.ingestion_config.transformed_data_dir}')
 
         except Exception as e:
             error_message = CustomException(e, sys)
             logger.error(error_message)
         
-        return None
-
-        
+        return None        

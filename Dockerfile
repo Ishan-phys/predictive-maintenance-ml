@@ -1,7 +1,6 @@
-# Build an image that can do training and inference
+# Build an image that can do training and inference in SageMaker
 # This is a Python 3 image that uses the nginx, gunicorn, uvicorn, fastAPI stack
 # for serving inferences in a stable way.
-
 FROM ubuntu:22.04
 
 LABEL maintainer="Ishan Srivastava (ishan.alld@gmail.com)"
@@ -14,7 +13,16 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
          ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip --no-cache-dir install numpy==1.26.3 scipy==1.11.4 scikit_learn==1.3.0 pandas==2.1.4 PyYAML==6.0.1 fastapi==0.108.0 gunicorn==21.2.0 uvicorn[standard]==0.25.0 boto3==1.34.11 requests==2.31.0 msgspec==0.18.5
+# Set up the program and configs in the image
+COPY src /opt/program/src
+COPY app /opt/program
+COPY requirements.txt /opt/program/requirements.txt
+COPY setup.py /opt/program/setup.py
+COPY artifacts/models/model.pkl /opt/program/model.pkl
+WORKDIR /opt/program
+
+# Install dependencies
+RUN pip install -r requirements.txt
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
@@ -25,13 +33,5 @@ RUN pip --no-cache-dir install numpy==1.26.3 scipy==1.11.4 scikit_learn==1.3.0 p
 # ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
-# Create the ml folder inside the /opt/ml directory
-RUN mkdir -p /opt/ml/model
-RUN mkdir -p /opt/ml/metadata
-
-# Set up the program and configs in the image
-COPY src /opt/program
-WORKDIR /opt/program
-
-RUN chmod +x /opt/program/train
+# Set up the program in the image
 RUN chmod +x /opt/program/serve

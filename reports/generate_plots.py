@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt  
 import numpy as np
+import pandas as pd
 
 from src.components.features import calc_fft
 from src.components.data_transformation  import DataTransformation
@@ -78,37 +79,69 @@ def plot_freq_info(ax, fft, **kwargs):
     return None
 
 
+def plot_timeseries(ax, data, cols, **kwargs):
+    """Plots the time series data.
+
+    Args:
+        data (dict): Dictionary with the data.
+        plot_title (str): Title of the plot.
+        plot_xlabel (str): Label of the x axis.
+        plot_ylabel (str): Label of the y axis.
+    """
+    plot_title = kwargs.get('plot_title', None)
+    plot_xlabel = kwargs.get('plot_xlabel', None)
+    plot_ylabel = kwargs.get('plot_ylabel', None)
+    n_xticks = kwargs.get('n_xticks', 50)
+    save = kwargs.get('save', False)
+
+    ax.plot(data["timestamp"], data[cols], linewidth=0.5, linestyle='-', alpha=0.8, color='black')
+    # change the fontsize
+    ax.set_xticks(np.arange(0, len(data), n_xticks), data['timestamp'][::n_xticks], size=10, rotation=20)
+    ax.set_title(plot_title, fontsize=12)
+    ax.set_xlabel(plot_xlabel, fontsize=10)
+    ax.set_ylabel(plot_ylabel, fontsize=10)
+
+    if save:
+        plt.savefig('artifacts/plots/timeseries.png', dpi=300)
+
+    return None
+
 
 sampling_rate = 20480
 freq_cutoff = 2000
 n_xticks = 100
 
-dt = DataTransformation()
+# dt = DataTransformation()
 
-healthy_data = dt.extract_data_file(data_filepath='artifacts/data/raw/2nd_test/2004.02.12.11.02.39')[:,0]
-unhealthy_data = dt.extract_data_file(data_filepath='artifacts/data/raw/2nd_test/2004.02.19.00.22.39')[:,0]
+# healthy_data = dt.extract_data_file(data_filepath='artifacts/data/raw/2nd_test/2004.02.12.11.02.39')[:,0]
+# unhealthy_data = dt.extract_data_file(data_filepath='artifacts/data/raw/2nd_test/2004.02.19.00.22.39')[:,0]
 
-_, healthy_amps, healthy_freqs = calc_fft(healthy_data, sampling_rate=20480)
-_, unhealthy_amps, unhealthy_freqs = calc_fft(unhealthy_data, sampling_rate=20480)
+# _, healthy_amps, healthy_freqs = calc_fft(healthy_data, sampling_rate=20480)
+# _, unhealthy_amps, unhealthy_freqs = calc_fft(unhealthy_data, sampling_rate=20480)
 
 
-fft_healthy = {
-    "fftAmplitude": healthy_amps,
-    "fftFrequency": healthy_freqs
-}
+# fft_healthy = {
+#     "fftAmplitude": healthy_amps,
+#     "fftFrequency": healthy_freqs
+# }
 
-fft_unhealthy = {
-    "fftAmplitude": unhealthy_amps,
-    "fftFrequency": unhealthy_freqs
-}
+# fft_unhealthy = {
+#     "fftAmplitude": unhealthy_amps,
+#     "fftFrequency": unhealthy_freqs
+# }
 
-plt.style.use('fivethirtyeight')
-fig, ax = plt.subplots()
-plot_fft(ax, fft_healthy, freq_cutoff=freq_cutoff, n_xticks=n_xticks, alpha=0.6, label='Asset Healthy')
-plot_fft(ax, fft_unhealthy, freq_cutoff=freq_cutoff, n_xticks=n_xticks, color='r', alpha=0.5, label='Asset Unhealthy')
+df = pd.read_csv('artifacts/data/transformed/processed_data.csv')
 
-ax.legend(loc='upper right', fontsize=10)
+plt.style.use('ggplot')
+fig, ax = plt.subplots(figsize=(10, 8))
 
+
+# plot_fft(ax, fft_healthy, freq_cutoff=freq_cutoff, n_xticks=n_xticks, alpha=0.6, label='Asset Healthy')
+# plot_fft(ax, fft_unhealthy, freq_cutoff=freq_cutoff, n_xticks=n_xticks, color='r', alpha=0.5, label='Asset Unhealthy')
+plot_timeseries(ax, data=df, cols='trms', plot_title='Time Series Plot', plot_xlabel='Time', plot_ylabel='RMS', n_xticks=100, save=True)
+ax.legend(loc='upper right', fontsize=8)
+
+plt.tight_layout()
 
 plt.show()
 
