@@ -59,7 +59,7 @@ class Predictor:
             the model
         """
         try:
-            model_file_path = os.path.join(self.predictor_configs.model_dir, f"model.pkl")
+            model_file_path = os.path.join(f"model.pkl")
             model = load_object(model_file_path)
             logger.info(f"Model loaded successfully from {model_file_path}.")
         
@@ -89,7 +89,8 @@ class Predictor:
             y_pred = clf.predict(input)
 
             # Convert -1 to 1 (Label 1 denotes faulty file)
-            y_pred = convert_prediction_to_label(y_pred)
+            y_pred = convert_prediction_to_label(y_pred)[0]
+            logger.info(f'Prediction successful on the {y_pred}')
         
         except Exception as e:
             error_message = CustomException(e, sys)
@@ -125,7 +126,7 @@ class Predictor:
             error_message = CustomException(e, sys)
             logger.error(error_message)
 
-        return y_pred
+        return y_pred, features_dict
 
 
 @app.exception_handler(Exception)
@@ -170,26 +171,29 @@ async def transformation(request: Request):
     try: 
         # Read the json data passed as the request
         post_data  = await request.json()
-        logger.info(f"Request: {post_data}")
+        logger.info(f"Request keys: {post_data.keys()}")
 
-        accel_data = post_data.get('accel_data')
-        timestamp  = post_data.get('timestamp')
+        accel_data = np.array(post_data.get('accelData'))
+        timestamp  = post_data.get('timeStamp')
 
         predictor = Predictor()
 
         # Get the prediction of the model on the input data
-        y_pred = predictor.predict_faulty_or_healthy(accel_data)
+        y_pred, features_dict = predictor.predict_faulty_or_healthy(accel_data)
+
+        logger.info(f'ML prediction on the file: {y_pred}')
 
         # Construct the response
         response_data = {
-            "timestamp": timestamp,
-            "prediction": y_pred
+            "timeStamp": timestamp,
+            "rmsAccel":float(round(features_dict['trms'], 3)),
+            "prediction": int(y_pred)
         }
 
     except Exception as e:
         error_message = CustomException(e, sys)
         logger.error(error_message)
         
-    return JSONResponse(content=json.JSONEncoder().encode(response_data), status_code=200)
+    return JSONResponse(content=response_data, status_code=200)
 
 

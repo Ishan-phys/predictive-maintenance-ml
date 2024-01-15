@@ -69,4 +69,4 @@ def convert_prediction_to_label(y_pred):
     Returns:
         np array: Labels
     """
-    return (y_pred == 1).astype(int)
+    return (y_pred == -1).astype(int)

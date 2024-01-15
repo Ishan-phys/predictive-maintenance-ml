@@ -24,5 +24,7 @@ if __name__ == "__main__":
 
     y_preds_all = np.concatenate([y_pred_train, y_pred_val, y_pred_test], axis=0)
 
+    print(f"Y predictions all: {y_preds_all}")
+
     trainer.save_predictions(data_filepath='artifacts/data/transformed/processed_data.csv', y_preds=y_preds_all)
 

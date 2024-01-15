@@ -68,7 +68,7 @@ class DataTransformation:
             logger.info(f'Spectrum features calculated successfully.')
 
             # Calculate the time domain features
-            time_features     = calc_time_features(centered_data)
+            time_features = calc_time_features(centered_data)
             features.update(time_features)
             logger.info(f'Time domain features calculated successfully.')
 
