@@ -13,23 +13,21 @@ from src.utils import save_object, convert_prediction_to_label
 
 @dataclass
 class ModelTrainerConfig:
-    trained_model_filepath = os.path.join("artifacts", "models", "model.pkl")
-    proccessed_data_filepath = os.path.join("artifacts", "data", "transformed", "processed_data.csv")
-    training_data_filepath = os.path.join("artifacts", "data", "transformed", "train_data.csv")
-    validation_data_filepath = os.path.join("artifacts", "data", "transformed", "val_data.csv")
-    testing_data_filepath = os.path.join("artifacts", "data", "transformed", "test_data.csv")
+    trained_model_dir = os.path.join("artifacts", "models", "model.pkl")
+    processed_data_dir = os.path.join("artifacts", "data", "transformed")
     accepted_model_accuracy = 0.80
 
 
 class ModelTrainer:
-    def __init__(self):
+    def __init__(self, bearing_num):
         self.model_trainer_config = ModelTrainerConfig()
+        self.bearing_num = bearing_num
 
     def prepare_training_data(self):
         """Prepare the training data for training the ML model"""
         try:
-            train_df = pd.read_csv(self.model_trainer_config.training_data_filepath)
-            val_df   = pd.read_csv(self.model_trainer_config.validation_data_filepath)
+            train_df = pd.read_csv(os.path.join(self.model_trainer_config.processed_data_dir, f"train_data_b{self.bearing_num}.csv"))
+            val_df   = pd.read_csv(os.path.join(self.model_trainer_config.processed_data_dir, f"val_data_b{self.bearing_num}.csv"))
 
             X_train = train_df.drop(columns=["timestamp"])
             X_val   = val_df.drop(columns=["timestamp"])
@@ -95,9 +93,9 @@ class ModelTrainer:
             else:
                 save_object(
                     obj=model,
-                    filepath=self.model_trainer_config.trained_model_filepath
+                    filepath=os.path.join(self.model_trainer_config.trained_model_dir, f"model_b{self.bearing_num}.pkl")
                 )
-                logger.info(f"Model saved at {self.model_trainer_config.trained_model_filepath}")
+                logger.info(f"Model saved at {os.path.join(self.model_trainer_config.trained_model_dir, f'model_b{self.bearing_num}.pkl')}")
                 
         except Exception as e:
             raise CustomException(e, sys)
@@ -114,7 +112,7 @@ class ModelTrainer:
             np array: predictions on the test data
         """
         try:
-            df_test = pd.read_csv(self.model_trainer_config.testing_data_filepath)
+            df_test = pd.read_csv(os.path.join(self.model_trainer_config.processed_data_dir, f"test_data_b{self.bearing_num}.csv"))
             X_test = df_test.drop(columns=["timestamp"])
 
             y_pred_test = model.predict(X_test)
@@ -138,7 +136,7 @@ class ModelTrainer:
         try:
             df = pd.read_csv(data_filepath)
             df["scores"] = y_preds
-            df.to_csv(os.path.join(save_dir, 'predictions.csv'), index=False)
+            df.to_csv(os.path.join(save_dir, f'predictions_b{self.bearing_num}.csv'), index=False)
 
             logger.info(f"Successfully saved the predictions on the test data.")
 

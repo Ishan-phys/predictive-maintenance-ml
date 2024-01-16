@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import numpy as np
 
 from fastapi import FastAPI, Request
@@ -189,6 +188,8 @@ async def transformation(request: Request):
             "rmsAccel":float(round(features_dict['trms'], 3)),
             "prediction": int(y_pred)
         }
+
+        #TODO: Save the response to a MongoDB database
 
     except Exception as e:
         error_message = CustomException(e, sys)

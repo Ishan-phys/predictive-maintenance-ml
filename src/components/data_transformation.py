@@ -24,10 +24,11 @@ class DataTransformationConfig:
 
 
 class DataTransformation:
-    def __init__(self) -> None:
+    def __init__(self, bearing_num) -> None:
         self.ingestion_config = DataTransformationConfig()
+        self.bearing_num = bearing_num
 
-    def extract_data_file(self, data_filepath, bearing_num):
+    def extract_data_file(self, data_filepath):
         """Extract the data from the individual plain/txt files
 
         Args:
@@ -38,7 +39,7 @@ class DataTransformation:
         """
         try:
             # Extract the data from the individual files
-            data = np.loadtxt(data_filepath, delimiter=self.ingestion_config.file_delimiter, dtype=float)[:,bearing_num-1]
+            data = np.loadtxt(data_filepath, delimiter=self.ingestion_config.file_delimiter, dtype=float)[:,self.bearing_num-1]
             logger.info(f'Data extraction from file {data_filepath} completed successfully. Data Shape: {data.shape}')
             
         except Exception as e:
@@ -145,7 +146,7 @@ class DataTransformation:
 
             if save:
                 # Save the dataframe to a csv file
-                df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'processed_data.csv'), index=False)
+                df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, f'processed_data_b{self.bearing_num}.csv'), index=False)
                 logger.info(f'Dataframe saved successfully at {self.ingestion_config.transformed_data_dir}')
 
         except Exception as e:
@@ -174,9 +175,9 @@ class DataTransformation:
 
             if save:
                 # Save the train, validation and test sets to csv files
-                train_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'train_data.csv'), index=False)
-                val_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'val_data.csv'), index=False)
-                test_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, 'test_data.csv'), index=False)
+                train_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, f'train_data_b{self.bearing_num}.csv'), index=False)
+                val_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, f'val_data_b{self.bearing_num}.csv'), index=False)
+                test_df.to_csv(os.path.join(self.ingestion_config.transformed_data_dir, f'test_data_b{self.bearing_num}.csv'), index=False)
                 logger.info(f'Train, validation and test sets saved successfully at {self.ingestion_config.transformed_data_dir}')
 
         except Exception as e:

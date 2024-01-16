@@ -6,30 +6,38 @@ import numpy as np
 from src.utils import convert_to_timestamp
 
 def txt_to_json(data_filepath, bearing_num=1):
-    """_summay_
+    """Converts the txt file to json format.
 
     Args:
-        data_filepath (_type_): _description_
-        bearing_num (int, optional): _description_. Defaults to 1.
+        data_filepath (str): filepath to the data.
+        bearing_num (int, optional): Defaults to 1.
     """
     data = np.loadtxt(data_filepath, delimiter='\t', dtype=float)[:,bearing_num-1]
     timestamp = convert_to_timestamp(date_string=data_filepath.split('/')[-1])
 
     data_dict = {
-        'accelData': data.tolist(),
-        'timeStamp': timestamp
+        'timeStamp': timestamp,
+        'bearingNumber': bearing_num,
+        'accelData': data.tolist()
     }
 
     return data_dict
 
 
 def send_requests(request_type='get', body=None):
+    """Send requests to the API.
 
+    Args:
+        request_type (str, optional): type of request. Defaults to 'get'.
+        body (dict_, optional): dict. Defaults to None.
+
+    Returns:
+        _type_: _description_
+    """
     if request_type == 'get':
         url = "http://localhost:8080/ping"
 
         response = requests.get(url)
-
         print(response.json())
 
     elif request_type == 'post':
@@ -41,12 +49,9 @@ def send_requests(request_type='get', body=None):
         }
 
         response = requests.post(url, headers=headers, data=json.dumps(body))
-
         print(response.json())
 
     return response
-
-
 
 
 if __name__ == "__main__":
