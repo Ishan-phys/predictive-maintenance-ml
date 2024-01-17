@@ -99,7 +99,7 @@ selected = option_menu(
 # --- INPUT & SAVE PERIODS ---
 if selected == "Machine Information":
     st.header(f"Asset Information", divider=True)
-    st.image('bearing.png', caption='Asset: Four Bearings', use_column_width=True)
+    st.image('artifacts/bearing.png', caption='Asset: Four Bearings', use_column_width=True)
     st.subheader('Asset Details:')
     st.text('Four bearings were installed on a shaft. The rotation speed was kept constant at\n2000 RPM by an AC motor coupled to the shaft via rub belts. A radial load of \n6000 lbs is applied onto the shaft and bearing by a spring mechanism.\nAll bearings are force lubricated.')
     st.write('Credits: [link](https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/)')
@@ -113,7 +113,6 @@ if selected == "Machine Health Status":
         timestamp   = st.selectbox("Select Timestamp:", ['17-Jan-2024', '12-Feb', '13-Feb', '14-Feb', '15-Feb', '16-Feb', '17-Feb', '18-Feb', '19-Feb'])
         submitted = st.form_submit_button("Plot Health Status")
         if submitted:
-            pass
             # Get data from database
             data_list = fetch_data_db(db_name='test', collection_name='collection', timestamp=timestamp, local=True)
 
