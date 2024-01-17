@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
@@ -10,17 +11,19 @@ from src.exception import CustomException
 
 load_dotenv()
 
-def database_connection():
-    """Connect to the MongoDB database"""
+def database_connection(local=True):
+    """Connect to the MongoDB database
+    
+    local (bool): whether to connect to the local database or the cloud database
+    """
+    if local:
+        client = MongoClient("localhost", 27017)
+    else:
+        # Get the database URI from the environment variables
+        database_uri = os.getenv("DATABASE_URL")
 
-    # Get the database URI from the environment variables
-    database_uri = os.getenv("DATABASE_URL")
-
-    # Get the database name from the environment variables
-    database_name = os.getenv("DATABASE_NAME")
-
-    # Create a new client and connect to the server
-    client = MongoClient(database_uri)
+        # Create a new client and connect to the server
+        client = MongoClient(database_uri)
 
     # Send a ping to confirm a successful connection
     try:
@@ -30,10 +33,10 @@ def database_connection():
         error_message = CustomException(e, sys)
         logger.error(f"Could not connect to MongoDB: {error_message}")
     
-    return client[database_name]
+    return client
 
 
-def insert_data(db, collection_name, data):
+def insert_data(client, db_name, collection_name, data):
     """Insert data into the MongoDB database
     
     Args:
@@ -42,6 +45,10 @@ def insert_data(db, collection_name, data):
         data (dict): the data to insert
     """
     try:
+        client = database_connection(local=True)
+        # Access a specific database
+        db = client[db_name]
+
         collection = db[collection_name]
 
         # Insert the data into the collection
@@ -54,25 +61,52 @@ def insert_data(db, collection_name, data):
     return None
 
 
+def fetch_data_db(db_name, collection_name, timestamp, local=True): 
+    """Fetch data from the MongoDB database
+    
+    Args:
+        db (MongoClient): the database connection
+        collection_name (str): the name of the collection
+
+    Returns:
+        item_details (dict): the data from the collection
+    """
+    data_list = []
+
+    client = database_connection(local=local)
+
+    # Access a specific database
+    db = client[db_name]
+
+    # Access a specific collection (i.e Table)
+    collection = db[collection_name]
+
+    item_details = collection.find({'timeStamp': timestamp})
+
+    for item in item_details:
+        # This does not give a very readable output
+        data_list.append(item)
+
+    return data_list
+
+
+
 if __name__ == "__main__":
 
-    # Get the database connection
-    db = database_connection()
+    fetch_data_db(db_name='test', timestamp='17-Jan-2024', collection_name='collection')
+    # db_name = 'machinehealth'
 
-    now = datetime.now()
+    # # Access a specific database
+    # db = client.test
 
-    id = now.strftime("%d%m%Y%H%M%S")
-    timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
+    # # Access a specific collection (i.e Table)
+    # collection = db.collection
 
-    print(now)
+    # item_details = collection.find()
 
-    # Fetch the data 
-    response_data = {
-            "_id": str(id),
-            "timeStamp": timestamp,
-            "rmsAccel":float(0.345),
-            "prediction": int(0)
-        }
-    
-    # Insert the data into the database
-    insert_data(db, "test", response_data)
+    # for item in item_details:
+    #     # This does not give a very readable output
+    #     print(item)
+
+    # # Close Connection
+    # client.close()
