@@ -3,11 +3,10 @@ import sys
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from src.logger import logger
 from src.exception import CustomException
-from src.utils import convert_to_timestamp
 
 load_dotenv()
 
@@ -64,7 +63,7 @@ def insert_data(db_name, collection_name, data, local=True):
     return None
 
 
-def fetch_data_db(db_name, collection_name, timestamp, local=True): 
+def fetch_data_db(db_name, collection_name, date_string, bearing_num, local=True): 
     """Fetch data from the MongoDB database
     
     Args:
@@ -84,7 +83,24 @@ def fetch_data_db(db_name, collection_name, timestamp, local=True):
     # Access a specific collection (i.e Table)
     collection = db[collection_name]
 
-    item_details = collection.find({'timeStamp': timestamp})
+    if date_string.lower() == 'all':
+        # Query with conditions
+        query = {
+            'bN': int(bearing_num)
+        }
+
+    else:
+        # Convert input date string to timestamp
+        input_date = datetime.strptime(date_string, '%d-%b-%Y')
+        timestamp = int(input_date.timestamp())
+
+        # Query with conditions
+        query = {
+            'tS': {'$gte': timestamp, '$lt': timestamp + 86400},
+            'bN': int(bearing_num)
+        }
+
+    item_details = collection.find(query)
 
     for item in item_details:
         # This does not give a very readable output
@@ -94,40 +110,17 @@ def fetch_data_db(db_name, collection_name, timestamp, local=True):
 
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-#     local = False
-#     #client = database_connection(local=True)
-#     date_string = "2004.02.12.10.32.39"
-#     epoch = convert_to_timestamp(date_string)
+    import pandas as pd
+    db_name = "machinehealth"
+    collection_name = "test"
+    date_string = '17-Feb-2004'
+    bearing_num = 1
+    local = False
 
+    data_list = fetch_data_db(db_name, collection_name, date_string, bearing_num, local=local)
 
-#     data = {
-#         '_id': epoch,
-#         'timeStamp': date_string,
-#         'bearingNum': 1,
-#         'rmsAccel': 0.23,
-#         'prediction': int(0)
-#     }
+    df = pd.DataFrame(data_list)
 
-#     db_name = 'machinehealth'
-#     collection_name = 'test'
-#     insert_data(db_name, collection_name, data, local=False)
-
-    # fetch_data_db(db_name='test', timestamp='17-Jan-2024', collection_name='collection')
-    # db_name = 'machinehealth'
-
-    # # Access a specific database
-    # db = client.test
-
-    # # Access a specific collection (i.e Table)
-    # collection = db.collection
-
-    # item_details = collection.find()
-
-    # for item in item_details:
-    #     # This does not give a very readable output
-    #     print(item)
-
-    # # Close Connection
-    # client.close()
+    print(df)

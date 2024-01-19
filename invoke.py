@@ -60,19 +60,16 @@ if __name__ == "__main__":
     data_dir = 'artifacts/data/raw/2nd_test'
     bearing_num = 3
 
-    for filename in sorted(os.listdir(data_dir))[400:]:
+    for filename in sorted(os.listdir(data_dir))[400:401]:
+        print(filename)
         body = txt_to_json(data_filepath=os.path.join(data_dir, filename), bearing_num=bearing_num)
         response = send_requests(request_type='post', body=body)
 
-    # body = txt_to_json(data_filepath="artifacts/data/raw/2nd_test/2004.02.12.21.32.39", bearing_num=1)
-    # print(body)
-    # response = send_requests(request_type='post', body=body)
-
-    # # Check the response status code
-    # if response.status_code == 200:
-    #     # Success!
-    #     print(response.json())
-    # else:
-    #     # Error!
-    #     print(response.status_code)
+        # Check the response status code
+        if response.status_code == 200:
+            # Success!
+            print(response.json())
+        else:
+            # Error!
+            print(response.status_code)
 
