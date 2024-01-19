@@ -18,7 +18,8 @@ COPY src /opt/program/src
 COPY app /opt/program
 COPY requirements.txt /opt/program/requirements.txt
 COPY setup.py /opt/program/setup.py
-COPY artifacts/models/model.pkl /opt/program/model.pkl
+COPY artifacts/models /opt/program
+COPY .env /opt/program/.env
 WORKDIR /opt/program
 
 # Install dependencies

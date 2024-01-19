@@ -18,7 +18,7 @@ def txt_to_json(data_filepath, bearing_num=1):
 
     data_dict = {
             'timeStamp': int(epoch),
-            'bearingNumber': bearing_num,
+            'bearingNum': bearing_num,
             'accelData': data.tolist()
         }
 
@@ -50,7 +50,7 @@ def send_requests(request_type='get', body=None):
         }
 
         response = requests.post(url, headers=headers, data=json.dumps(body))
-        print(response.json())
+        # print(response.json())
 
     return response
 
@@ -58,15 +58,14 @@ def send_requests(request_type='get', body=None):
 if __name__ == "__main__":
 
     data_dir = 'artifacts/data/raw/2nd_test'
+    bearing_num = 3
 
-    for filename in sorted(os.listdir(data_dir))[:1]:
-        body = txt_to_json(data_filepath=os.path.join(data_dir, filename), bearing_num=1)
+    for filename in sorted(os.listdir(data_dir))[400:]:
+        body = txt_to_json(data_filepath=os.path.join(data_dir, filename), bearing_num=bearing_num)
         response = send_requests(request_type='post', body=body)
 
     # body = txt_to_json(data_filepath="artifacts/data/raw/2nd_test/2004.02.12.21.32.39", bearing_num=1)
-
-    # print(body['_id'])
-
+    # print(body)
     # response = send_requests(request_type='post', body=body)
 
     # # Check the response status code

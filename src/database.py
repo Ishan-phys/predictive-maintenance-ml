@@ -94,25 +94,25 @@ def fetch_data_db(db_name, collection_name, timestamp, local=True):
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    local = False
-    #client = database_connection(local=True)
-    date_string = "2004.02.12.10.32.39"
-    epoch = convert_to_timestamp(date_string)
+#     local = False
+#     #client = database_connection(local=True)
+#     date_string = "2004.02.12.10.32.39"
+#     epoch = convert_to_timestamp(date_string)
 
 
-    data = {
-        '_id': epoch,
-        'timeStamp': date_string,
-        'bearingNum': 1,
-        'rmsAccel': 0.23,
-        'prediction': int(0)
-    }
+#     data = {
+#         '_id': epoch,
+#         'timeStamp': date_string,
+#         'bearingNum': 1,
+#         'rmsAccel': 0.23,
+#         'prediction': int(0)
+#     }
 
-    db_name = 'machinehealth'
-    collection_name = 'test'
-    insert_data(db_name, collection_name, data, local=False)
+#     db_name = 'machinehealth'
+#     collection_name = 'test'
+#     insert_data(db_name, collection_name, data, local=False)
 
     # fetch_data_db(db_name='test', timestamp='17-Jan-2024', collection_name='collection')
     # db_name = 'machinehealth'

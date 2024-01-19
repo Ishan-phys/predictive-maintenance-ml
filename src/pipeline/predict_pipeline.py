@@ -114,7 +114,7 @@ class Predictor:
             sampling_rate = self.predictor_configs.sampling_rate
 
             # Extract the features from the data
-            data_transform = DataTransformation()
+            data_transform = DataTransformation(bearing_num=self.bearing_num)
 
             # Get the features from the data
             features_dict = data_transform.featurize(data, sampling_rate)
@@ -185,9 +185,11 @@ async def transformation(request: Request):
         y_pred, features_dict = predictor.predict_faulty_or_healthy(accel_data)
         logger.info(f'ML prediction on the file: {y_pred}')
 
+        unique_id = f"{timestamp}b{bearing_num}"
+
         # Construct the response
         response_data = {
-            "_id": int(timestamp),                            # Epoch time
+            "_id": unique_id,                                 # ID
             "tS"  : int(timestamp),                           # Epoch time
             "bN": int(bearing_num),                           # Bearing number
             "rA": float(round(features_dict['trms'], 3)),     # RMS acceleration
