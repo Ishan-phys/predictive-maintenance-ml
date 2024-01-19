@@ -1,6 +1,5 @@
 import os
 import sys
-import numpy as np
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
@@ -8,6 +7,7 @@ from datetime import datetime
 
 from src.logger import logger
 from src.exception import CustomException
+from src.utils import convert_to_timestamp
 
 load_dotenv()
 
@@ -36,7 +36,7 @@ def database_connection(local=True):
     return client
 
 
-def insert_data(client, db_name, collection_name, data):
+def insert_data(db_name, collection_name, data, local=True):
     """Insert data into the MongoDB database
     
     Args:
@@ -45,15 +45,18 @@ def insert_data(client, db_name, collection_name, data):
         data (dict): the data to insert
     """
     try:
-        client = database_connection(local=True)
+        client = database_connection(local)
+
         # Access a specific database
         db = client[db_name]
 
+        # Access a specific collection (i.e Table)
         collection = db[collection_name]
 
         # Insert the data into the collection
         collection.insert_one(data)
         logger.info(f"Successfully inserted data into the {collection_name} collection")
+
     except Exception as e:
         error_message = CustomException(e, sys)
         logger.error(f"Could not insert data into the {collection_name} collection: {error_message}")
@@ -93,7 +96,25 @@ def fetch_data_db(db_name, collection_name, timestamp, local=True):
 
 if __name__ == "__main__":
 
-    fetch_data_db(db_name='test', timestamp='17-Jan-2024', collection_name='collection')
+    local = False
+    #client = database_connection(local=True)
+    date_string = "2004.02.12.10.32.39"
+    epoch = convert_to_timestamp(date_string)
+
+
+    data = {
+        '_id': epoch,
+        'timeStamp': date_string,
+        'bearingNum': 1,
+        'rmsAccel': 0.23,
+        'prediction': int(0)
+    }
+
+    db_name = 'machinehealth'
+    collection_name = 'test'
+    insert_data(db_name, collection_name, data, local=False)
+
+    # fetch_data_db(db_name='test', timestamp='17-Jan-2024', collection_name='collection')
     # db_name = 'machinehealth'
 
     # # Access a specific database

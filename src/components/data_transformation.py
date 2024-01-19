@@ -81,7 +81,7 @@ class DataTransformation:
 
         return features
 
-    def featurize_all(self, data_dir, sampling_rate, bearing_num):
+    def featurize_all(self, data_dir, sampling_rate):
         """Calculate the features from the data
 
         Args:
@@ -110,7 +110,7 @@ class DataTransformation:
                 features.update({'timestamp':timestamp})
 
                 # Extract the data from the individual files
-                data = self.extract_data_file(file_path, bearing_num)
+                data = self.extract_data_file(file_path)
 
                 # Calculate the features from the data
                 calc_features = self.featurize(data, sampling_rate)

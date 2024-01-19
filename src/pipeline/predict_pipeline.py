@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 from src.exception import CustomException
 from src.logger import logger
+from src.database import database_connection, insert_data
 from src.utils import load_object, convert_prediction_to_label
 from src.components.data_transformation import DataTransformation
 
@@ -46,10 +47,11 @@ class PredictorConfig:
 # It has a predict function that does a prediction based on the model and the input data.
 class Predictor:
 
-    def __init__(self):
+    def __init__(self, bearing_num):
 
         self.predictor_configs = PredictorConfig()
         self.model = None
+        self.bearing_num = bearing_num
         
     def _load_model(self):
         """Get the model object for this instance, loading it if it's not already loaded.
@@ -58,7 +60,7 @@ class Predictor:
             the model
         """
         try:
-            model_file_path = os.path.join(f"model.pkl")
+            model_file_path = os.path.join(f"model_b{self.bearing_num}.pkl")
             model = load_object(model_file_path)
             logger.info(f"Model loaded successfully from {model_file_path}.")
         
@@ -157,7 +159,6 @@ def ping():
     it healthy if we can load the model successfully."""
 
     # status = 200 if model_health else 404
-
     status = 200
 
     return {"status": status}
@@ -172,24 +173,29 @@ async def transformation(request: Request):
         post_data  = await request.json()
         logger.info(f"Request keys: {post_data.keys()}")
 
-        accel_data = np.array(post_data.get('accelData'))
-        timestamp  = post_data.get('timeStamp')
+        # Extract the data from the request
+        accel_data  = np.array(post_data.get('accelData'))
+        timestamp   = post_data.get('timeStamp')
+        bearing_num = post_data.get('bearingNum')
 
-        predictor = Predictor()
+        # Instantiate the predictor class
+        predictor = Predictor(bearing_num=bearing_num)
 
         # Get the prediction of the model on the input data
         y_pred, features_dict = predictor.predict_faulty_or_healthy(accel_data)
-
         logger.info(f'ML prediction on the file: {y_pred}')
 
         # Construct the response
         response_data = {
-            "timeStamp": timestamp,
-            "rmsAccel":float(round(features_dict['trms'], 3)),
-            "prediction": int(y_pred)
+            "_id": int(timestamp),                            # Epoch time
+            "tS"  : int(timestamp),                           # Epoch time
+            "bN": int(bearing_num),                           # Bearing number
+            "rA": float(round(features_dict['trms'], 3)),     # RMS acceleration
+            "hS": int(y_pred)                                 # Health Status
         }
 
-        #TODO: Save the response to a MongoDB database
+        # Insert the data into the database
+        insert_data(db_name='machinehealth', collection_name='test', data=response_data, local=False)
 
     except Exception as e:
         error_message = CustomException(e, sys)

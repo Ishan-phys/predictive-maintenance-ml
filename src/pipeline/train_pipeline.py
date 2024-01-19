@@ -5,7 +5,9 @@ from src.components.model_trainer import ModelTrainer
 
 if __name__ == "__main__":
 
-    trainer = ModelTrainer()
+    bearing_num = 4
+
+    trainer = ModelTrainer(bearing_num=bearing_num)
 
     X_train, X_val = trainer.prepare_training_data()
 
@@ -26,5 +28,5 @@ if __name__ == "__main__":
 
     print(f"Y predictions all: {y_preds_all}")
 
-    trainer.save_predictions(data_filepath='artifacts/data/transformed/processed_data.csv', y_preds=y_preds_all)
+    trainer.save_predictions(data_filepath=f'artifacts/data/transformed/processed_data_b{bearing_num}.csv', y_preds=y_preds_all)
 

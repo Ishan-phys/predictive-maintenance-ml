@@ -1,14 +1,14 @@
 import os
-import streamlit as st
-import plotly.graph_objects as go  
-from streamlit_option_menu import option_menu
 import pandas as pd
+import numpy as np
+import streamlit as st
+import plotly.express as px 
+import plotly.graph_objects as go
+from streamlit_option_menu import option_menu
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 
 # -------------- DB Connection Functions --------------
 def database_connection(local=True):
@@ -74,7 +74,7 @@ layout = "centered"
 
 
 st.set_page_config(page_title=page_title, page_icon=page_icon, layout=layout)
-st.title(page_title + " " + page_icon)
+st.title(page_title)
 
 
 # --- HIDE STREAMLIT STYLE ---
@@ -96,57 +96,46 @@ selected = option_menu(
     orientation="horizontal",
 )
 
-# --- INPUT & SAVE PERIODS ---
+# ----------------------------- INPUT & SAVE PERIODS -----------------
 if selected == "Machine Information":
     st.header(f"Asset Information", divider=True)
-    st.image('artifacts/bearing.png', caption='Asset: Four Bearings', use_column_width=True)
+    st.image('artifacts/bearing.jpg', caption='Asset: IMS bearing test rig with sensors placed on each bearing.', use_column_width=True)
     st.subheader('Asset Details:')
-    st.text('Four bearings were installed on a shaft. The rotation speed was kept constant at\n2000 RPM by an AC motor coupled to the shaft via rub belts. A radial load of \n6000 lbs is applied onto the shaft and bearing by a spring mechanism.\nAll bearings are force lubricated.')
+    st.text('Four bearings installed on a shaft run by an AC motor coupled to the shaft via rub belts.\nRotational Speed = 2000 RPM \nRadial Load = 6000 lbs (applied onto the shaft and bearing by a spring mechanism) \nAll bearings are force lubricated.')
+    st.subheader('Data Details:')
+    st.write('Data Type: Time Series')
+    st.write('Sampling Rate: 20480/sec')
+    st.write('Collection Duration: 1 sec')
+    st.write('Collection Frequency: Every 10 mins')
+    st.write('Data Source: NASA Prognostics Center of Excellence (PCoE) Data Repository')
     st.write('Credits: [link](https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/)')
 
 
-# --- PLOT PERIODS ---
+# --------------------- PLOT PERIODS --------------------------------
 if selected == "Machine Health Status":
     st.header("Machine Health Status")
     with st.form("saved_periods"):
         bearing_num = st.selectbox("Select Bearing Number:", ['1', '2', '3', '4'])
-        timestamp   = st.selectbox("Select Timestamp:", ['17-Jan-2024', '12-Feb', '13-Feb', '14-Feb', '15-Feb', '16-Feb', '17-Feb', '18-Feb', '19-Feb'])
+        timestamp   = st.selectbox("Select Timestamp:", ['12-Feb', '13-Feb', '14-Feb', '15-Feb', '16-Feb', '17-Feb', '18-Feb', '19-Feb', 'All'])
         submitted = st.form_submit_button("Plot Health Status")
         if submitted:
             # Get data from database
-            data_list = fetch_data_db(db_name='test', collection_name='collection', timestamp=timestamp, local=True)
-
+            # data_list = fetch_data_db(db_name='test', collection_name='collection', timestamp=timestamp, local=True)
+            # Sample data
+            data_list = {'rms': np.random.rand(50), 'healthStatus': (np.random.choice([0, 1], size=50)).astype(str)}       
             df = pd.DataFrame(data_list)
 
-            st.title('RMS')
-            st.line_chart(df['rmsAccel'])
-            # period_data = db.get_period(period)
-            # comment = period_data.get("comment")
-            # expenses = period_data.get("expenses")
-            # incomes = period_data.get("incomes")
+            df['healthStatus'] = df['healthStatus'].replace({'0': 'Healthy', '1': 'Faulty'})
 
-            # # Create metrics
-            # total_income = sum(incomes.values())
-            # total_expense = sum(expenses.values())
-            # remaining_budget = total_income - total_expense
-            # col1, col2, col3 = st.columns(3)
-            # col1.metric("Total Income", f"{total_income} {currency}")
-            # col2.metric("Total Expense", f"{total_expense} {currency}")
-            # col3.metric("Remaining Budget", f"{remaining_budget} {currency}")
-            # st.text(f"Comment: {comment}")
+            # Plot the data
+            line_fig = px.line(df, x=np.arange(len(df)), y='rms')
+            
+            # Overlay a scatter plot on the line plot
+            scatter_fig = px.scatter(df, x=np.arange(len(df)), y='rms', color='healthStatus', color_discrete_sequence=['green', 'red'], labels={'rms': f'RMS (mm/s^2)', 'healthStatus': 'Health Status'},
+                         title='RMS Acceleration with Health Status Overlayed')
+            
+            # Overlay a line plot on the scatter plot
+            combined_plots = go.Figure(data=line_fig.data + scatter_fig.data, layout=scatter_fig.layout)
 
-            # # Create sankey chart
-            # label = list(incomes.keys()) + ["Total Income"] + list(expenses.keys())
-            # source = list(range(len(incomes))) + [len(incomes)] * len(expenses)
-            # target = [len(incomes)] * len(incomes) + [label.index(expense) for expense in expenses.keys()]
-            # value = list(incomes.values()) + list(expenses.values())
-
-            # # Data to dict, dict to sankey
-            # link = dict(source=source, target=target, value=value)
-            # node = dict(label=label, pad=20, thickness=30, color="#E694FF")
-            # data = go.Sankey(link=link, node=node)
-
-            # # Plot it!
-            # fig = go.Figure(data)
-            # fig.update_layout(margin=dict(l=0, r=0, t=5, b=5))
-            # st.plotly_chart(fig, use_container_width=True)
+            # Display both plots in Streamlit
+            st.plotly_chart(combined_plots)

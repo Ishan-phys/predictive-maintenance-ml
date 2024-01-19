@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 import numpy as np
 
@@ -13,13 +14,13 @@ def txt_to_json(data_filepath, bearing_num=1):
         bearing_num (int, optional): Defaults to 1.
     """
     data = np.loadtxt(data_filepath, delimiter='\t', dtype=float)[:,bearing_num-1]
-    timestamp = convert_to_timestamp(date_string=data_filepath.split('/')[-1])
+    epoch = convert_to_timestamp(date_string=data_filepath.split('/')[-1])
 
     data_dict = {
-        'timeStamp': timestamp,
-        'bearingNumber': bearing_num,
-        'accelData': data.tolist()
-    }
+            'timeStamp': int(epoch),
+            'bearingNumber': bearing_num,
+            'accelData': data.tolist()
+        }
 
     return data_dict
 
@@ -56,15 +57,23 @@ def send_requests(request_type='get', body=None):
 
 if __name__ == "__main__":
 
-    body = txt_to_json(data_filepath="artifacts/data/raw/2nd_test/2004.02.12.21.32.39", bearing_num=1)
+    data_dir = 'artifacts/data/raw/2nd_test'
 
-    response = send_requests(request_type='post', body=body)
+    for filename in sorted(os.listdir(data_dir))[:1]:
+        body = txt_to_json(data_filepath=os.path.join(data_dir, filename), bearing_num=1)
+        response = send_requests(request_type='post', body=body)
 
-    # Check the response status code
-    if response.status_code == 200:
-        # Success!
-        print(response.json())
-    else:
-        # Error!
-        print(response.status_code)
+    # body = txt_to_json(data_filepath="artifacts/data/raw/2nd_test/2004.02.12.21.32.39", bearing_num=1)
+
+    # print(body['_id'])
+
+    # response = send_requests(request_type='post', body=body)
+
+    # # Check the response status code
+    # if response.status_code == 200:
+    #     # Success!
+    #     print(response.json())
+    # else:
+    #     # Error!
+    #     print(response.status_code)
 

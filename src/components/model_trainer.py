@@ -13,7 +13,7 @@ from src.utils import save_object, convert_prediction_to_label
 
 @dataclass
 class ModelTrainerConfig:
-    trained_model_dir = os.path.join("artifacts", "models", "model.pkl")
+    trained_model_dir = os.path.join("artifacts", "models")
     processed_data_dir = os.path.join("artifacts", "data", "transformed")
     accepted_model_accuracy = 0.80
 

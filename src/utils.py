@@ -21,9 +21,12 @@ def convert_to_timestamp(date_string):
     dt_object = datetime.strptime(date_string, format_string)
 
     # Convert the datetime object to a string in a desired format
-    formatted_date_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    # formatted_date_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
 
-    return formatted_date_string
+    # Epoch time
+    epoch = dt_object.timestamp()
+
+    return int(epoch)
 
 
 def save_object(obj, filepath):
