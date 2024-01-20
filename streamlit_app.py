@@ -9,7 +9,9 @@ from streamlit_option_menu import option_menu
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
+
 
 # -------------- DB Connection Functions --------------
 def database_connection(local=True):
@@ -21,7 +23,8 @@ def database_connection(local=True):
         client = MongoClient("localhost", 27017)
     else:
         # Get the database URI from the environment variables
-        database_uri = os.getenv("DATABASE_URL")
+        # database_uri = os.getenv("DATABASE_URL")
+        database_uri = st.secrets['db_url']
 
         # Create a new client and connect to the server
         client = MongoClient(database_uri)
@@ -149,7 +152,7 @@ if selected == "Machine Health Status":
             line_fig = px.line(df, x=np.arange(len(df)), y='rA')
             
             # Overlay a scatter plot on the line plot
-            scatter_fig = px.scatter(df, x=np.arange(len(df)), y='rA', color='hS', color_discrete_sequence=['green', 'red'], labels={'rms': f'RMS (mm/s^2)', 'healthStatus': 'Health Status'},
+            scatter_fig = px.scatter(df, x=np.arange(len(df)), y='rA', color='hS', color_discrete_sequence=['green', 'red'], labels={'rA': 'RMS Acceleration (mm/s^2)', 'x':'time' ,'healthStatus': 'Health Status'},
                          title='RMS Acceleration with Health Status Overlayed')
             
             # Overlay a line plot on the scatter plot
